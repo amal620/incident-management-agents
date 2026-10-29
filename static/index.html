@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8fc">
+  <title>FusionFlow AI — Incident Operations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="FusionFlow AI home">
+        <span class="brand-mark"><span></span><span></span><span></span><span></span></span>
+        <span class="brand-copy"><strong>FusionFlow</strong><small>AI OPERATIONS</small></span>
+      </a>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="nav">
+        <a class="nav-item active" href="#overview" id="overview-nav"><span class="nav-icon">◫</span>Vue d'ensemble</a>
+        <a class="nav-item" href="#incident-panel"><span class="nav-icon">⌁</span>Nouvel incident</a>
+        <a class="nav-item admin-only" href="#agents"><span class="nav-icon">✳</span>Agents IA <span class="nav-count">6</span></a>
+        <a class="nav-item admin-only" href="#devops"><span class="nav-icon">⌘</span>GitHub & CI/CD</a>
+        <a class="nav-item admin-only" href="#governance"><span class="nav-icon">◈</span>Gouvernance</a>
+        <a class="nav-item admin-only" href="#activity"><span class="nav-icon">◷</span>Journal d'activité</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="connection-card">
+          <span class="pulse"></span>
+          <div><strong>Local workspace</strong><small id="connection-label">Vérification du système…</small></div>
+        </div>
+        <div class="profile">
+          <div class="avatar">FF</div>
+          <div class="profile-copy"><strong id="profile-name">Operations team</strong><small id="profile-role">Connexion requise</small></div>
+          <button class="text-button" id="logout-button" type="button">Sortir</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb">Workspace <span>/</span> <strong id="workspace-breadcrumb">Incident Operations</strong></div>
+        <div class="topbar-right">
+          <span class="environment"><i></i> ENVIRONMENT <b>LOCAL</b></span>
+          <button class="icon-button" id="refresh-button" title="Actualiser le statut" aria-label="Actualiser le statut">↻</button>
+          <div class="top-avatar" id="top-avatar">U</div>
+        </div>
+      </header>
+
+      <div class="page-content" id="overview">
+        <section class="welcome-row">
+          <div>
+            <div class="eyebrow"><span class="eyebrow-line"></span> INCIDENT INTELLIGENCE PLATFORM</div>
+            <h1 id="workspace-title">Incident <span>Operations.</span></h1>
+            <p class="subtitle" id="workspace-subtitle">Analysez, priorisez et coordonnez la résolution de vos incidents avec LangGraph.</p>
+          </div>
+          <div class="date-chip"><span class="date-dot"></span><span id="current-date">Aujourd'hui</span></div>
+        </section>
+
+        <section class="metrics-grid admin-only" aria-label="Indicateurs administrateur">
+          <article class="metric-card">
+            <div class="metric-top"><span>Incidents traités</span><span class="metric-icon purple">⌁</span></div>
+            <div class="metric-value" id="metric-total">00</div>
+            <div class="metric-foot"><span class="neutral-dot"></span>Tous les utilisateurs</div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top"><span>Agents opérationnels</span><span class="metric-icon green">✳</span></div>
+            <div class="metric-value" id="metric-agents">05 <span class="metric-unit">/ 05</span></div>
+            <div class="metric-foot"><span class="status-dot"></span>Orchestration disponible</div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top"><span>Temps moyen</span><span class="metric-icon blue">◷</span></div>
+            <div class="metric-value" id="metric-time">— <span class="metric-unit">ms</span></div>
+            <div class="metric-foot">Temps de réponse du backend</div>
+          </article>
+          <article class="metric-card">
+            <div class="metric-top"><span>Agents LangGraph</span><span class="metric-icon amber">↗</span></div>
+            <div class="metric-value compact" id="metric-fusion">v1.0.0</div>
+            <div class="metric-foot" id="fusion-foot">Version active LangGraph</div>
+          </article>
+        </section>
+
+        <div class="content-grid">
+          <section class="panel incident-panel" id="incident-panel">
+            <div class="panel-heading">
+              <div><div class="section-kicker" id="incident-kicker">LANGGRAPH CHAT</div><h2 id="incident-heading">Nouvelle analyse</h2><p id="incident-description">Décrivez votre problème et choisissez le niveau de détail de la réponse.</p></div>
+              <span class="live-badge"><i></i> READY</span>
+            </div>
+            <form id="incident-form">
+              <label class="field-label" for="incident-message" id="incident-label">Décrivez votre problème <span>REQUIS</span></label>
+              <textarea id="incident-message" required minlength="5" maxlength="8000" placeholder="Expliquez votre problème, le résultat souhaité ou ce que vous voulez améliorer…" rows="5"></textarea>
+              <div class="input-meta"><span>Soyez précis : symptômes, impact, contexte récent.</span><span id="char-count">0 / 8000</span></div>
+              <label class="field-label" for="response-style">Style de réponse du chatbot</label>
+              <select id="response-style" class="response-style"><option value="brief">Courte et directe</option><option value="normal">Normale</option><option value="detailed" selected>Détaillée avec étapes et risques</option></select>
+              <div class="mode-heading admin-only"><label class="field-label">Méthode de traitement & SemVer</label><span>Choisissez le type de changement</span></div>
+              <div class="mode-options admin-only">
+                <label class="mode-option">
+                  <input type="radio" name="mode" value="major">
+                  <span class="mode-card major">
+                    <span class="mode-symbol">↗</span><span class="mode-title">Major</span>
+                    <span class="mode-desc">Changement majeur, refonte ou rupture de compatibilité.</span>
+                    <span class="mode-tag">HIGH IMPACT</span>
+                  </span>
+                </label>
+                <label class="mode-option">
+                  <input type="radio" name="mode" value="minor" checked>
+                  <span class="mode-card minor">
+                    <span class="mode-symbol">⌁</span><span class="mode-title">Minor</span>
+                    <span class="mode-desc">Nouvelle capacité compatible avec la version actuelle.</span>
+                    <span class="mode-tag">CONTROLLED</span>
+                  </span>
+                </label>
+                <label class="mode-option">
+                  <input type="radio" name="mode" value="patch">
+                  <span class="mode-card patch">
+                    <span class="mode-symbol">✳</span><span class="mode-title">Patch</span>
+                    <span class="mode-desc">Correction de bug, prompt ou configuration.</span>
+                    <span class="mode-tag">LOW CHANGE</span>
+                  </span>
+                </label>
+              </div>
+              <div class="form-bottom">
+                <span class="privacy-note"><span>◈</span> Analyse sécurisée sur votre environnement local</span>
+                <button type="submit" class="primary-button" id="run-button"><span>Envoyer au chatbot</span><span class="button-arrow">→</span></button>
+              </div>
+              <div class="form-error" id="form-error" role="alert" hidden></div>
+            </form>
+          </section>
+
+          <section class="panel agents-panel admin-only" id="agents">
+            <div class="panel-heading agents-heading">
+              <div><div class="section-kicker">ORCHESTRATION</div><h2>Agents IA</h2><p>État des composants du workflow.</p></div>
+              <span class="agent-count">05 AGENTS</span>
+            </div>
+            <div class="agent-list">
+              <article class="agent-row" id="agent-analyzer">
+                <div class="agent-avatar avatar-purple">✳</div>
+                <div class="agent-info"><strong>Incident Analyst</strong><small>Analyse & classification</small><div class="agent-meta"><span class="agent-state"><i></i><span>En attente</span></span><span class="agent-duration">—</span></div></div>
+                <span class="agent-chevron">›</span>
+              </article>
+              <article class="agent-row" id="agent-orchestrator">
+                <div class="agent-avatar avatar-blue">⌘</div>
+                <div class="agent-info"><strong>LangGraph Orchestrator</strong><small>Routage & coordination</small><div class="agent-meta"><span class="agent-state"><i></i><span>En attente</span></span><span class="agent-duration">—</span></div></div>
+                <span class="agent-chevron">›</span>
+              </article>
+              <article class="agent-row" id="agent-fusion">
+                <div class="agent-avatar avatar-green">↗</div>
+                <div class="agent-info"><strong>Agent de Gouvernance</strong><small>Validation de la solution</small><div class="agent-meta"><span class="agent-state"><i></i><span>En attente</span></span><span class="agent-duration">—</span></div></div>
+                <span class="agent-chevron">›</span>
+              </article>
+              <article class="agent-row" id="agent-correction">
+                <div class="agent-avatar avatar-blue">↻</div>
+                <div class="agent-info"><strong>Agent de Correction</strong><small>Révision après rejet gouvernance</small><div class="agent-meta"><span class="agent-state"><i></i><span>En attente</span></span><span class="agent-duration">—</span></div></div>
+                <span class="agent-chevron">›</span>
+              </article>
+              <article class="agent-row" id="agent-reporting">
+                <div class="agent-avatar avatar-purple">▤</div>
+                <div class="agent-info"><strong>Agent de Reporting</strong><small>Rapport final et traçabilité</small><div class="agent-meta"><span class="agent-state"><i></i><span>En attente</span></span><span class="agent-duration">—</span></div></div>
+                <span class="agent-chevron">›</span>
+              </article>
+            </div>
+            <div class="agents-note"><span class="note-icon">i</span><span>LangGraph orchestre les agents, les branches de validation, une tentative de correction et le rapport final. Aucun webhook externe n’est requis.</span></div>
+          </section>
+        </div>
+
+        <section class="panel ops-panel admin-only" id="devops">
+          <div class="panel-heading">
+            <div><div class="section-kicker">SOURCE CONTROL & DELIVERY</div><h2>GitHub & CI/CD</h2><p>Suivez le dépôt, récupérez les changements et poussez une branche après validation.</p></div>
+            <button class="secondary-button" id="refresh-ops">Actualiser</button>
+          </div>
+          <div class="ops-grid">
+            <article class="ops-card"><div class="ops-card-top"><span class="ops-icon">⌘</span><span class="ops-label">DÉPÔT LOCAL</span></div><strong id="git-branch">Non connecté</strong><p id="git-remote">Aucun remote Git détecté.</p><div class="ops-meta"><span id="git-changes">— fichiers modifiés</span><span id="git-clean" class="mini-status pending">À vérifier</span></div><div class="ops-actions"><button class="secondary-button" id="pull-button">Pull</button><button class="secondary-button" id="push-button">Push</button></div><div class="ops-actions"><button class="secondary-button" id="tag-button">Créer tag v1.0.0</button><button class="secondary-button" id="push-tag-button">Push tag</button></div></article>
+            <article class="ops-card"><div class="ops-card-top"><span class="ops-icon green">✓</span><span class="ops-label">CONTINUOUS INTEGRATION</span></div><strong id="ci-status">En attente</strong><p id="ci-description">Les tests automatiques se lancent sur push et pull request.</p><div class="ops-meta"><span>GitHub Actions</span><a id="ci-link" href="https://github.com" target="_blank" rel="noreferrer" hidden>Voir le run ↗</a></div></article>
+            <article class="ops-card"><div class="ops-card-top"><span class="ops-icon blue">↗</span><span class="ops-label">CONTINUOUS DELIVERY</span></div><strong id="cd-status">À configurer</strong><p>Le déploiement automatique dépend de l'hébergeur et de ses secrets.</p><div class="ops-meta"><span>Approbation humaine recommandée</span><span class="mini-status pending">Protection</span></div></article>
+          </div>
+          <div class="ops-message" id="ops-message" role="status">Le statut GitHub apparaît après configuration du dépôt et de la connexion Git locale.</div>
+        </section>
+
+        <section class="panel governance-panel admin-only" id="governance">
+          <div class="panel-heading"><div><div class="section-kicker">GOVERNANCE & TRACEABILITY</div><h2>Agent Cards & Versionnement</h2><p>Identité, responsabilité, outils autorisés, limites, KPI et version de chaque agent.</p></div><span class="version-chip" id="version-chip">v1.0.0</span></div>
+          <div class="version-row"><div><span class="ops-label">VERSION SEMVER</span><strong id="version-current">v1.0.0</strong><p>Major = changement majeur · Minor = nouvelle capacité · Patch = correction</p></div><div class="version-rules"><span><b>MAJOR</b> x.0.0</span><span><b>MINOR</b> x.y.0</span><span><b>PATCH</b> x.y.z</span></div></div>
+          <div class="admin-tools" id="admin-tools">
+            <div class="admin-metrics" id="admin-metrics"><span>Chargement des métriques admin…</span></div>
+            <div class="version-controls">
+              <label class="field-label" for="version-type">Créer une version</label>
+              <select id="version-type" class="response-style"><option value="patch">PATCH — correction (x.y.Z)</option><option value="minor">MINOR — nouvelle fonction (x.Y.0)</option><option value="major">MAJOR — rupture majeure (X.0.0)</option></select>
+              <input id="version-notes" class="version-notes" maxlength="500" placeholder="Motif du changement (obligatoire)">
+              <button class="secondary-button" id="create-version-button" type="button">Créer version</button>
+              <button class="danger-button" id="rollback-version-button" type="button">Rollback version logique</button>
+            </div>
+            <div class="git-rollback-controls">
+              <label class="field-label" for="rollback-tag">Rollback du code Git (tag stable)</label>
+              <input id="rollback-tag" class="version-notes" placeholder="Ex. v1.0.0">
+              <button class="danger-button" id="rollback-code-button" type="button">Restaurer le code depuis ce tag</button>
+              <small>Crée une branche backup avant le reset. Le dépôt doit être propre; le Push reste manuel.</small>
+            </div>
+            <div class="admin-users" id="admin-users">Chargement des utilisateurs…</div>
+            <div class="version-history" id="version-history">Historique des versions…</div>
+          </div>
+          <div class="agent-cards-grid" id="agent-cards-grid"><div class="ops-message">Chargement des fiches agents…</div></div>
+          <div class="safety-row"><div class="safety-copy"><strong>Kill Switch</strong><p>Suspend les actions Git depuis cette interface; l’analyse LangGraph reste disponible.</p></div><span id="kill-state" class="mini-status pending">Désactivé</span><button class="danger-button" id="kill-switch-button">Activer le Kill Switch</button></div>
+          <div class="runbook-note"><strong>Runbook opérationnel</strong><span>En cas d'incident : suspendre les actions → collecter les logs → identifier la cause → rollback vers la dernière version stable → tester → réactiver. Consultez <code>RUNBOOK.md</code>.</span></div>
+        </section>
+
+        <section class="panel result-panel" id="results">
+          <div class="panel-heading result-heading">
+            <div><div class="section-kicker">RÉPONSE LANGGRAPH</div><h2 id="result-heading">Réponse du chatbot</h2></div>
+            <span class="result-id" id="result-id">Aucun incident sélectionné</span>
+          </div>
+          <div class="empty-state" id="empty-state">
+            <div class="empty-illustration"><span class="empty-orbit orbit-one"></span><span class="empty-orbit orbit-two"></span><span class="empty-core">✳</span></div>
+            <strong id="empty-title">Votre chatbot est prêt.</strong>
+            <p id="empty-description">Envoyez votre demande. Vous pouvez choisir une réponse courte, normale ou détaillée.</p>
+          </div>
+          <div id="result-content" hidden>
+            <div class="result-summary">
+              <div class="severity-block"><span class="result-label">SÉVÉRITÉ ESTIMÉE</span><strong id="result-severity">—</strong></div>
+              <div class="summary-copy"><span class="result-label">MODE SÉLECTIONNÉ</span><strong id="result-mode">—</strong><p id="result-analysis"></p></div>
+              <div class="time-block"><span class="result-label">TEMPS TOTAL</span><strong id="result-duration">—</strong></div>
+            </div>
+            <div class="steps-section"><div class="steps-heading"><h3>Plan de résolution recommandé</h3><span id="step-count">0 étapes</span></div><ol id="recommended-steps"></ol></div>
+            <div class="token-usage admin-only" id="token-usage"><span>Tokens entrée <b id="prompt-tokens">0</b></span><span>Tokens sortie <b id="completion-tokens">0</b></span><span>Total <b id="total-tokens">0</b></span><span>Style <b id="response-style-result">Détaillée</b></span></div>
+            <div class="fusion-response"><div><strong>Rapport LangGraph</strong><p id="fusion-response-text">Le rapport final apparaîtra après analyse.</p></div><span id="fusion-status-pill" class="status-pill">—</span></div>
+            <div class="warning-text" id="warning-text" hidden></div>
+          </div>
+        </section>
+
+        <section class="panel activity-panel admin-only" id="activity">
+          <div class="panel-heading activity-heading"><div><div class="section-kicker">TRACEABILITY</div><h2>Journal d'activité</h2></div><button class="text-button" id="clear-log">Effacer la session</button></div>
+          <div class="activity-table-wrap">
+            <table><thead><tr><th>INCIDENT</th><th>DESCRIPTION</th><th>MÉTHODE</th><th>STATUT</th><th>DURÉE</th></tr></thead><tbody id="activity-body"><tr class="table-empty"><td colspan="5">Aucune activité pour le moment.</td></tr></tbody></table>
+          </div>
+        </section>
+        <footer class="footer"><span>FUSIONFLOW AI <b>·</b> INCIDENT OPERATIONS</span><span>Designed for clarity. Built for control.</span></footer>
+      </div>
+    </main>
+  </div>
+  <div class="auth-overlay" id="auth-overlay">
+    <form class="auth-card" id="auth-form">
+      <div class="brand-mark auth-mark"><span></span><span></span><span></span><span></span></div>
+      <div class="section-kicker">FUSIONFLOW AI • ESPACE SÉCURISÉ</div>
+      <h2 id="auth-title">Bienvenue</h2><p id="auth-description">Connectez-vous à votre espace.</p>
+      <label class="field-label" for="auth-name" id="auth-name-label">Nom affiché</label><input id="auth-name" autocomplete="name" placeholder="Votre nom">
+      <label class="field-label" for="auth-email">E-mail</label><input id="auth-email" type="email" required autocomplete="username" placeholder="vous@exemple.com">
+      <label class="field-label" for="auth-password">Mot de passe</label><input id="auth-password" type="password" required minlength="10" autocomplete="current-password" placeholder="10 caractères minimum">
+      <button class="primary-button" type="submit" id="auth-submit">Se connecter →</button>
+      <button class="text-button" type="button" id="auth-toggle">Créer un compte utilisateur</button>
+      <div class="form-error" id="auth-error" role="alert" hidden></div>
+    </form>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

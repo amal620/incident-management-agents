@@ -1,0 +1,13 @@
+services:
+  fusionflow-ai:
+    build: .
+    container_name: fusionflow-ai
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_PATH: data/fusionflow.db
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped

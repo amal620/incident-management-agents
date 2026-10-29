@@ -1,0 +1,6 @@
+line-length = 200
+extend-exclude = [".venv"]
+
+[lint]
+# Erreurs de syntaxe et pyflakes (imports inutilisés, noms indéfinis...)
+select = ["E9", "F"]

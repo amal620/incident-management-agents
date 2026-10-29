@@ -1,0 +1,140 @@
+name: FusionFlow CD
+# Déclenché par un tag SemVer (vX.Y.Z) poussé depuis la Dashboard (Push tag) ou à la main.
+# Il peut aussi être lancé manuellement pour REDÉPLOYER un ancien tag stable (= rollback).
+on:
+  push:
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag à (re)déployer, ex. v1.2.0 (utilisé aussi pour un rollback)'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Vérifier le tag + tests
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+      version: ${{ steps.vars.outputs.version }}
+    steps:
+      - name: Résoudre le tag
+        id: vars
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+        run: |
+          TAG="$INPUT_TAG"
+          echo "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$' || { echo "::error::Tag invalide ($TAG). Format attendu : vX.Y.Z"; exit 1; }
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.vars.outputs.tag }}
+          fetch-depth: 0
+      - name: Le tag doit appartenir à la branche principale
+        run: |
+          git branch -r --contains HEAD | grep -Eq 'origin/(main|master)' || { echo "::error::Le tag n'est pas sur main/master"; exit 1; }
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: pytest
+
+  build-push:
+    name: Build + push de l'image Docker (GHCR)
+    runs-on: ubuntu-latest
+    needs: verify
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify.outputs.tag }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=${{ needs.verify.outputs.version }}
+            type=raw,value=latest
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    name: Déploiement (approbation manuelle)
+    runs-on: ubuntu-latest
+    needs: [verify, build-push]
+    # Configurez Settings > Environments > production > "Required reviewers"
+    # pour exiger l'approbation d'une personne avant ce job.
+    environment:
+      name: production
+      url: ${{ vars.DEPLOY_URL }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.verify.outputs.tag }}
+      - name: Vérifier la configuration de l'hébergeur
+        id: cfg
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_URL: ${{ vars.DEPLOY_URL }}
+        run: |
+          [ -n "$DEPLOY_URL" ] && echo "check=true" >> "$GITHUB_OUTPUT" || echo "check=false" >> "$GITHUB_OUTPUT"
+          if [ -z "$DEPLOY_HOST" ] || [ -z "$DEPLOY_USER" ] || [ -z "$DEPLOY_SSH_KEY" ]; then
+            echo "::warning::Aucun hébergeur configuré (secrets DEPLOY_HOST / DEPLOY_USER / DEPLOY_SSH_KEY). L'image est publiée sur GHCR mais N'EST PAS déployée."
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Déployer sur le serveur (SSH + docker compose)
+        if: steps.cfg.outputs.enabled == 'true'
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IMAGE_REPOSITORY: ${{ github.repository }}
+          IMAGE_TAG: ${{ needs.verify.outputs.version }}
+        run: |
+          install -m 600 /dev/null key && printf '%s\n' "$DEPLOY_SSH_KEY" > key
+          DIR="${DEPLOY_PATH:-/opt/fusionflow}"
+          ssh -i key -o StrictHostKeyChecking=accept-new "$DEPLOY_USER@$DEPLOY_HOST" "mkdir -p $DIR"
+          scp -i key docker-compose.prod.yml "$DEPLOY_USER@$DEPLOY_HOST:$DIR/docker-compose.yml"
+          ssh -i key "$DEPLOY_USER@$DEPLOY_HOST" \
+            "cd $DIR && echo '$GHCR_TOKEN' | docker login ghcr.io -u '$GHCR_USER' --password-stdin && \
+             IMAGE_REPOSITORY='$IMAGE_REPOSITORY' IMAGE_TAG='$IMAGE_TAG' docker compose pull && \
+             IMAGE_REPOSITORY='$IMAGE_REPOSITORY' IMAGE_TAG='$IMAGE_TAG' docker compose up -d"
+      - name: Vérifier la version déployée (/api/health)
+        if: steps.cfg.outputs.enabled == 'true' && steps.cfg.outputs.check == 'true'
+        env:
+          DEPLOY_URL: ${{ vars.DEPLOY_URL }}
+          EXPECTED: ${{ needs.verify.outputs.version }}
+        run: |
+          for i in $(seq 1 30); do
+            OUT=$(curl -fsS "$DEPLOY_URL/api/health" || true)
+            echo "$OUT" | grep -q '"status":"ok"' && break
+            sleep 2
+          done
+          echo "$OUT"
+          echo "$OUT" | grep -q "\"version\":\"$EXPECTED\"" || { echo "::error::La version déployée ne correspond pas à $EXPECTED. Voir RUNBOOK.md (rollback)."; exit 1; }

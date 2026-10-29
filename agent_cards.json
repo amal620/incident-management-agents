@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0.0",
+  "semver_policy": {
+    "major": "Changement majeur, rupture de compatibilité ou refonte du workflow",
+    "minor": "Nouvelle capacité compatible avec les fonctions existantes",
+    "patch": "Correction de bug, ajustement de prompt ou configuration"
+  },
+  "agents": [
+    {
+      "id": "detection",
+      "name": "Agent de Détection",
+      "owner": "Équipe projet",
+      "role": "Vérifie la qualité et la validité de l'incident",
+      "tools": [
+        "LangGraph",
+        "LLM"
+      ],
+      "limits": "Ne confirme pas une cause sans preuves",
+      "kpi": "Validité de l'entrée",
+      "review_cycle": "À chaque changement de prompt"
+    },
+    {
+      "id": "diagnostic",
+      "name": "Agent Diagnostic",
+      "owner": "Équipe projet",
+      "role": "Analyse les causes possibles et propose une solution",
+      "tools": [
+        "LLM",
+        "contexte incident"
+      ],
+      "limits": "Ne prétend pas avoir exécuté les corrections",
+      "kpi": "Qualité du diagnostic",
+      "review_cycle": "À chaque changement de logique"
+    },
+    {
+      "id": "governance",
+      "name": "Agent de Gouvernance",
+      "owner": "Responsable technique",
+      "role": "Valide ou rejette la solution selon les règles de sécurité",
+      "tools": [
+        "Règles de gouvernance"
+      ],
+      "limits": "Seul cet agent peut valider la solution",
+      "kpi": "Conformité / risques détectés",
+      "review_cycle": "Avant chaque release majeure"
+    },
+    {
+      "id": "correction",
+      "name": "Agent de Correction",
+      "owner": "Équipe projet",
+      "role": "Propose une alternative après un rejet",
+      "tools": [
+        "Diagnostic précédent",
+        "retour Validator"
+      ],
+      "limits": "Ne marque jamais sa proposition VALID",
+      "kpi": "Taux de correction acceptée",
+      "review_cycle": "À chaque changement de prompt"
+    },
+    {
+      "id": "reporting",
+      "name": "Agent de Reporting",
+      "owner": "Équipe projet",
+      "role": "Produit le rapport final et les prochaines étapes",
+      "tools": [
+        "Résultats des agents"
+      ],
+      "limits": "Ne fabrique pas de tests ni de résultats",
+      "kpi": "Complétude du rapport",
+      "review_cycle": "À chaque changement de format"
+    }
+  ]
+}
